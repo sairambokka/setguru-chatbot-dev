@@ -66,34 +66,34 @@ SETGuru transforms the learning experience by combining the power of **Socratic 
 
 ```mermaid
 graph TB
-    subgraph "Client Layer"
-        A[👤 User]
+    subgraph Client["Client Layer"]
+        A["👤 User"]
     end
     
-    subgraph "Frontend Layer"
-        B[🖥️ Next.js Frontend<br/>Port: 3000]
+    subgraph Frontend["Frontend Layer"]
+        B["🖥️ Next.js Frontend<br/>Port: 3000"]
     end
     
-    subgraph "Backend Layer"
-        C[🚀 Node.js API Gateway<br/>Port: 3001]
-        D[🐍 Python AI Service<br/>Port: 8000]
+    subgraph Backend["Backend Layer"]
+        C["🚀 Node.js API Gateway<br/>Port: 3001"]
+        D["🐍 Python AI Service<br/>Port: 8000"]
     end
     
-    subgraph "Data Layer"
-        E[🗄️ PostgreSQL Database<br/>Port: 5432]
-        F[📦 Docker Volumes]
+    subgraph Data["Data Layer"]
+        E["🗄️ PostgreSQL Database<br/>Port: 5432"]
+        F["📦 Docker Volumes"]
     end
     
-    subgraph "External Services"
-        G[🤖 Google Gemini / OpenAI GPT]
+    subgraph External["External Services"]
+        G["🤖 Google Gemini / OpenAI GPT"]
     end
     
     A --> B
-    B --|HTTP/REST| C
-    C --|HTTP/REST| D
-    C --|SQL| E
-    D --|API Calls| G
-    E ---|Persistent Storage| F
+    B -->|HTTP/REST| C
+    C -->|HTTP/REST| D
+    C -->|SQL| E
+    D -->|API Calls| G
+    E -->|Persistent Storage| F
 ```
 
 ## 🚀 Quick Start
