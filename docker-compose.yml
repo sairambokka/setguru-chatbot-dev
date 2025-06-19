@@ -1,0 +1,87 @@
+# docker-compose.yml (in your project root directory)
+version: '3.8' # Use a recent Docker Compose file format version
+
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:16 # Using a specific version is best practice
+    restart: always # Always restart the container if it stops
+    environment:
+      # These environment variables are specific to the official Postgres Docker image
+      POSTGRES_USER: ${DB_USER} # Loaded from root .env file
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Loaded from root .env file
+      POSTGRES_DB: ${DB_NAME} # Loaded from root .env file
+    volumes:
+      - db_data:/var/lib/postgresql/data         # Persist database data across container restarts
+      - ./db_init:/docker-entrypoint-initdb.d/   # Mount your initialization scripts
+    ports:
+      - "${DB_PORT}:${DB_PORT}" # Expose PostgreSQL port (optional, but useful for external tools like pgAdmin)
+    healthcheck: # Optional: Ensure DB is ready before dependent services start
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Node.js Backend Service (API Gateway & User Data)
+  nodejs-backend:
+    build: ./backend # Path to your Node.js backend directory with its Dockerfile
+    ports:
+      - "${NODEJS_BACKEND_PORT}:${NODEJS_BACKEND_PORT}" # Map host port to container port
+    environment:
+      # These variables are injected into the Node.js container
+      NODEJS_BACKEND_PORT: ${NODEJS_BACKEND_PORT} # Node.js app runs on this port inside container
+      DB_USER: ${DB_USER}
+      DB_HOST: db # IMPORTANT: Use the service name for the database host within the Docker network
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      TEMP_USER_ID: ${TEMP_USER_ID} # For temporary testing without auth
+      PYTHON_AI_SERVICE_URL: http://python-ai-service:${PYTHON_AI_SERVICE_PORT} # Use service name for AI backend
+      LLM_PROVIDER_NAME: ${LLM_PROVIDER_NAME} # Pass LLM provider preference
+      NODE_ENV: development # Or 'production'
+    depends_on:
+      db:
+        condition: service_healthy # Wait for DB to be healthy
+      python-ai-service:
+        condition: service_started # Wait for AI service to start (can also use service_healthy if it has one)
+    restart: unless-stopped
+
+  # 3. Python AI Service
+  python-ai-service:
+    build: ./python-ai-service # Path to your Python AI service directory with its Dockerfile
+    ports:
+      - "${PYTHON_AI_SERVICE_PORT}:${PYTHON_AI_SERVICE_PORT}" # Map host port to container port
+    environment:
+      # These variables are injected into the Python container
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LLM_PROVIDER_NAME: ${LLM_PROVIDER_NAME} # Python app reads this to choose provider
+    depends_on:
+      db:
+        condition: service_healthy # If AI service also needs DB directly
+    restart: unless-stopped
+
+  # 4. Next.js Frontend Service
+  frontend:
+    build: ./frontend # Path to your Next.js frontend directory with its Dockerfile
+    ports:
+      - "3000:3000" # Map host port to container port
+    environment:
+      # Frontend environment variables (prefixed with NEXT_PUBLIC_ for Next.js client-side access)
+      # These URLs refer to the host machine's localhost, where your browser will access the backend services
+      NEXT_PUBLIC_NODE_BACKEND_URL: http://localhost:${NODEJS_BACKEND_PORT}/api
+      NEXT_PUBLIC_NODE_BACKEND_AI_URL: http://localhost:${NODEJS_BACKEND_PORT}/api/chat/message
+      NODE_ENV: development # Or 'production'
+    depends_on:
+      nodejs-backend:
+        condition: service_started # Frontend needs Node.js backend to be running
+    restart: unless-stopped
+
+# Define named volumes for data persistence
+volumes:
+  db_data:
+
+# Optional: Define a custom network if you need more complex networking
+# networks:
+#   my_app_network:
+#     driver: bridge

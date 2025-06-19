@@ -1,0 +1,11 @@
+# FastAPI and ASGI server
+fastapi
+uvicorn
+
+# Environment variable loading
+python-dotenv
+
+# LangChain core and provider integrations
+langchain
+langchain-google-genai
+langchain-openai
