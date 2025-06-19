@@ -140,7 +140,7 @@ GOOGLE_API_KEY=YOUR_API_KEY      # ⚠️ REQUIRED: Get from Google Cloud Consol
 OPENAI_API_KEY=                  # 🔧 Optional: For OpenAI models
 
 # 🤖 LLM Provider Selection
-LLM_PROVIDER=google              # Options: 'google' or 'openai'
+LLM_PROVIDER_NAME=google              # Options: 'google' or 'openai'
 ```
 
 > ⚠️ **Security Note**: Never commit your `.env` file to version control!
@@ -192,20 +192,20 @@ docker compose up
 | `DB_PASSWORD` | **Yes** | - | PostgreSQL password |
 | `GOOGLE_API_KEY` | **Yes** | - | Google Gemini API key |
 | `OPENAI_API_KEY` | No | - | OpenAI API key (if using OpenAI) |
-| `LLM_PROVIDER` | No | google | LLM provider (`google` or `openai`) |
+| `LLM_PROVIDER_NAME` | No | google | LLM provider (`google` or `openai`) |
 
 ### 🎯 LLM Provider Configuration
 
 #### Google Gemini Setup
 1. Visit [Google AI Studio](https://ai.google.dev/)
 2. Create a new API key
-3. Set `LLM_PROVIDER=google` in your `.env`
+3. Set `LLM_PROVIDER_NAME=google` in your `.env`
 4. Add your key as `GOOGLE_API_KEY`
 
 #### OpenAI Setup
 1. Visit [OpenAI Platform](https://platform.openai.com/)
 2. Create an API key
-3. Set `LLM_PROVIDER=openai` in your `.env`
+3. Set `LLM_PROVIDER_NAME=openai` in your `.env`
 4. Add your key as `OPENAI_API_KEY`
 
 ## 💻 Development
@@ -336,7 +336,7 @@ docker compose exec db psql -U setguru_user -d setguru_db -c "SELECT id FROM use
 
 **Problem**: AI responses not working
 - Check your `GOOGLE_API_KEY` is valid
-- Verify `LLM_PROVIDER` is set correctly
+- Verify `LLM_PROVIDER_NAME` is set correctly
 - Check API service logs: `docker compose logs python-ai-service`
 
 **Problem**: Rate limiting
